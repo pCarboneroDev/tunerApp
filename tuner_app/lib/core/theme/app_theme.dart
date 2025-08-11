@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:tuner_app/core/theme/app_colors.dart';
 
 class AppTheme {
   static Future<ThemeData?> getTheme(bool isDark) async {
 
+    if (isDark){
+      return AppColors.darkTheme();
+    }
+    
     return ThemeData(
       colorScheme: ColorScheme(
         brightness: isDark ? Brightness.dark : Brightness.light, 

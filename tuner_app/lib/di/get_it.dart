@@ -6,6 +6,7 @@ import 'package:tuner_app/domain/repositories/theme_repository.dart';
 import 'package:tuner_app/domain/usecase/theme/get_theme_usecase.dart';
 import 'package:tuner_app/domain/usecase/theme/save_theme_usecase.dart';
 import 'package:tuner_app/presentation/settings/bloc/settings_bloc.dart';
+import 'package:tuner_app/presentation/tuner/bloc/tuner_bloc.dart';
 
 final getIt = GetIt.instance;
 
@@ -20,4 +21,5 @@ Future<void> init() async {
   getIt.registerSingleton(SaveThemeUsecase(repo: getIt()));
 
   getIt.registerSingleton(SettingsBloc(getIt(), getIt()));
+  getIt.registerSingleton(TunerBloc());
 }

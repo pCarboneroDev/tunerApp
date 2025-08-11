@@ -5,6 +5,7 @@ import 'package:tuner_app/di/get_it.dart';
 import 'package:tuner_app/domain/entities/theme_entity.dart';
 import 'package:tuner_app/presentation/navigation_bar/bottom_navbar.dart';
 import 'package:tuner_app/presentation/settings/bloc/settings_bloc.dart';
+import 'package:tuner_app/presentation/tuner/bloc/tuner_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +16,9 @@ void main() async {
     providers: [
       BlocProvider(
         create: (context) => getIt<SettingsBloc>()..add(GetThemeEvent()),
+      ),
+      BlocProvider(
+        create: (context) => TunerBloc()
       )
     ],
     child: MyApp(),
