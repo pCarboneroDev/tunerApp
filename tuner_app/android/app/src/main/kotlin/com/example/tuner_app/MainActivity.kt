@@ -7,68 +7,100 @@ import android.media.MediaRecorder
 import androidx.annotation.RequiresPermission
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
+import java.util.concurrent.atomic.AtomicBoolean
 
 class MainActivity : FlutterActivity(){
     private val CHANNEL = "com.example.recordAudio"
+    private val EVENT_CHANNEL = "com.example.recordAudioStream"
     private val sampleRate = 44100
-    private val bufferSize = 16384
+    private var bufferSize = 16384
     private var audioRecord: AudioRecord? = null
+    private val isRecording = AtomicBoolean(false)
+    private var recordingThread: Thread? = null
 
-    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "startAudioRecord" -> {
-
-                        var args = call.arguments as List<*>
                         Thread {
-                            var a = startAudioRecord(args[0] as Boolean)
-                            runOnUiThread {
-                                result.success(a)
-                            }
+                            result.success(null)
                         }.start()
                     }
                     "stopAudioRecord" -> {
                         //stopAudioRecord()
                         Thread {
                             stopAudioRecord()
-                            runOnUiThread {
-                                result.success(null)
-                            }
+                            result.success(null)
                         }.start()
                     }
                     else -> result.notImplemented()
                 }
             }
+
+
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, EVENT_CHANNEL)
+            .setStreamHandler(object : EventChannel.StreamHandler {
+                private var events: EventChannel.EventSink? = null
+
+                @RequiresPermission(Manifest.permission.RECORD_AUDIO)
+                override fun onListen(arguments: Any?, sink: EventChannel.EventSink?) {
+                    events = sink
+                    startAudioRecord(events)
+                }
+
+                override fun onCancel(arguments: Any?) {
+                    stopAudioRecord()
+                }
+            })
     }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    private fun startAudioRecord(isRecording: Boolean): Double {
+    private fun startAudioRecord(events: EventChannel.EventSink? = null) {
+        if (isRecording.get()) return
+
         var freq = 0.0
         // Aquí va tu implementación con AudioRecord
-        if (audioRecord == null) init()
+        audioRecord = init()
 
-        if(audioRecord != null){
-            audioRecord!!.startRecording()
-            while (isRecording){
-                freq = processYIN(audioRecord!!, bufferSize, sampleRate)
+        audioRecord?.startRecording()
+        isRecording.set(true)
+
+
+        recordingThread = Thread {
+            while (isRecording.get()){
+                val freq = processYIN(audioRecord!!, bufferSize, sampleRate)
+                runOnUiThread {
+                    events?.success(freq)
+                }
             }
-            audioRecord?.stop()
+            /*val buffer = ShortArray(bufferSize)
+            while (isRecording.get()) {
+                val read = audioRecord?.read(buffer, 0, buffer.size) ?: 0
+                if (read > 0) {
+                    val freq = processYIN(audioRecord!!, bufferSize, sampleRate)
+                    events?.success(freq)
+                }
+            }*/
         }
-
-        return freq
+        recordingThread?.start()
     }
 
     private fun stopAudioRecord() {
+        isRecording.set(false)
+        recordingThread?.join()
         audioRecord?.stop()
+        audioRecord?.release()
+        audioRecord = null
     }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    private fun init(){
-        audioRecord = AudioRecord(
+    private fun init(): AudioRecord{
+        return AudioRecord(
             MediaRecorder.AudioSource.MIC, sampleRate,
             AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize
         )

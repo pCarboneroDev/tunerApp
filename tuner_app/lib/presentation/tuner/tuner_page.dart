@@ -41,7 +41,7 @@ class _TunerPageState extends State<TunerPage> {
               mainAxisAlignment: MainAxisAlignment.center,
 
               children: [
-                Text(state.hzFound.toString()),
+                Text('${state.hzFound}'),
 
                 Switch.adaptive(
                   value: state.isRecording, 

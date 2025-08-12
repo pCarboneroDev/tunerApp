@@ -18,6 +18,6 @@ class TunerState extends Equatable {
   );
 
   @override
-  List<Object> get props => [isRecording];
+  List<Object> get props => [isRecording, hzFound];
 }
 
