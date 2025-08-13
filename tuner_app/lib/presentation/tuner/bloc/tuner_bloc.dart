@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/services.dart';
+import 'package:tuner_app/domain/entities/music_note.dart';
+import 'package:tuner_app/domain/entities/tuning.dart';
+import 'package:tuner_app/domain/entities/ui_state.dart';
 
 part 'tuner_event.dart';
 part 'tuner_state.dart';
@@ -25,7 +29,20 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
   }
 
 
-  TunerBloc() : super(TunerState(isRecording: false, hzFound: 0.0)) {
+  TunerBloc() : super(
+
+    TunerState(
+      uiState: UIState.idle(),
+      isRecording: false, 
+      hzFound: 0.0, 
+      selectedTuning: Tuning(
+        tuningName: "Standard", 
+        tuningNotes: []
+      ),
+      tuningList: []
+    )
+
+  ) {
 
     on<TunerEvent>((event, emit) {
       // TODO: implement event handler
@@ -38,7 +55,6 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
         recordChannel.invokeMethod('startAudioRecord');
 
         _subscription = frequencyStream.listen((freq){
-          print('$freq');
           add(OnFrequencyReceivedEvent(freq));
         });
 
@@ -52,6 +68,30 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
 
     on<OnFrequencyReceivedEvent>((event, emit) {
       emit(state.copyWith(hzFound: event.frequency));
+    });
+
+    on<LoadTuningsEvent>((event, emit) {
+
+      emit(state.copyWith(uiState: UIState.loading()));
+
+      final MusicNote e = MusicNote(4, 2);
+      final MusicNote A = MusicNote(9, 2);
+      final MusicNote D = MusicNote(2, 3);
+      final MusicNote G = MusicNote(7, 3);
+      final MusicNote B = MusicNote(11, 3);
+      final MusicNote E = MusicNote(4, 4);
+
+
+      final Tuning standardTuning = Tuning(tuningName: 'Standard Tuning', tuningNotes: [e,A,D,G,B,E]);
+      final Tuning p1 = Tuning(tuningName: 'Prueba 1', tuningNotes: [e,A,D,G,B,E]);
+      final Tuning p3 = Tuning(tuningName: 'Prueba 2', tuningNotes: [e,A,D,G,B,E]);
+      final Tuning p2 = Tuning(tuningName: 'Prueba 3', tuningNotes: [e,A,D,G,B,E]);
+      final Tuning p4 = Tuning(tuningName: 'Prueba 4', tuningNotes: [e,A,D,G,B,E]);
+
+
+      final List<Tuning> tuningList = [standardTuning, p1, p4, p3, p2];
+
+      emit(state.copyWith(uiState: UIState.success(), selectedTuning: standardTuning, tuningList: tuningList));
     });
 
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tuner_app/presentation/settings/ui/settings_page.dart';
 import 'package:tuner_app/presentation/songs/songs_screen.dart';
-import 'package:tuner_app/presentation/tuner/tuner_page.dart';
+import 'package:tuner_app/presentation/tuner/ui/tuner_page.dart';
 
 
 class BottomNavbarPage extends StatefulWidget {

@@ -1,8 +1,5 @@
 part of 'splash_screen_bloc.dart';
 
-sealed class SplashScreenEvent extends Equatable {
-  const SplashScreenEvent();
+abstract class SplashScreenEvent {}
 
-  @override
-  List<Object> get props => [];
-}
+class OnLoadTheme implements SplashScreenEvent{}

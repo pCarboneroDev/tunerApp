@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tuner_app/core/theme/app_theme.dart';
 import 'package:tuner_app/di/get_it.dart';
 import 'package:tuner_app/domain/entities/theme_entity.dart';
+import 'package:tuner_app/presentation/navigation_bar/bottom_navbar.dart';
 import 'package:tuner_app/presentation/settings/bloc/settings_bloc.dart';
 import 'package:tuner_app/presentation/splash_screen/bloc/splash_screen_bloc.dart';
 import 'package:tuner_app/presentation/splash_screen/ui/splash_screen_page.dart';
@@ -16,7 +17,7 @@ void main() async {
   runApp(MultiBlocProvider(
     providers: [
       BlocProvider(
-        create: (context) => SplashScreenBloc()
+        create: (context) => getIt<SplashScreenBloc>()..add(OnLoadTheme())
       ),
       BlocProvider(
         create: (context) => getIt<SettingsBloc>()..add(GetThemeEvent()),
@@ -43,7 +44,12 @@ class MyApp extends StatelessWidget {
               debugShowCheckedModeBanner: false,
               title: 'Flutter Demo',
               theme: asyncSnapshot.data,
-              home: SplashScreenPage(),
+              initialRoute: 'splash',
+              routes: {
+                'splash': (context) => SplashScreenPage(),
+                'main': (context) => BottomNavbarPage()
+              },
+              //home: SplashScreenPage(),
             );
           }
         );

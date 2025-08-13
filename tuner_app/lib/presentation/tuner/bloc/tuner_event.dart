@@ -8,3 +8,5 @@ class OnFrequencyReceivedEvent extends TunerEvent {
   final double frequency;
   OnFrequencyReceivedEvent(this.frequency);
 }
+
+class LoadTuningsEvent implements TunerEvent{}
